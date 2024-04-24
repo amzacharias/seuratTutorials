@@ -10,6 +10,7 @@
 .Ruserdata
 
 # RStudio files
+seuratTutorials.Rproj
 .Rproj.user/
 
 # Large data files
