@@ -15,4 +15,4 @@ seuratTutorials.Rproj
 
 # Large data files
 introduction/data/*
-1_guidedClustering/rData/*
+introduction/1_guidedClustering/rData/*
