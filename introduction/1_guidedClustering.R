@@ -236,8 +236,113 @@ saveRDS(pbmc, file = file.path(rDataDir, "pbmc.rds"))
 pbmc <- ReadRDS(file = file.path(rDataDir, "pbmc.rds"))
 
 # Finding differentially expressed features (markers) -----------------------------------------
+# Define clusters by DEGs.
+# Default: + and - markers for a single cluster (ident.1) compared to all other cells.
+# Can also test groups of cells against all other cells.
+# Uses the `presto` package to speed up DE testing.
 
+# find all markers of cluster 2
+cluster2.markers <- FindMarkers(pbmc, ident.1 = 2)
+# logfc.threshold = 0.1, min.pct = 0.01
+# logfc.threshold: Limit testing to genes w/ ata least X-fold difference between two groups of cells, on average
+# min.pct: Limit testing to genes in a min. fraction of cells in either of two populations.
+head(cluster2.markers, n = 5)
+#             p_val avg_log2FC pct.1 pct.2    p_val_adj
+# IL32 2.892340e-90  1.3070772 0.947 0.465 3.966555e-86
+# LTB  1.060121e-86  1.3312674 0.981 0.643 1.453850e-82
+# CD3D 8.794641e-71  1.0597620 0.922 0.432 1.206097e-66
+# IL7R 3.516098e-68  1.4377848 0.750 0.326 4.821977e-64
+# LDHB 1.642480e-67  0.9911924 0.954 0.614 2.252497e-63
+# ‘pct.1’: The percentage of cells where the gene is detected in the first group
+# ‘pct.2’: The percentage of cells where the gene is detected in the second group
+# 'p_val_adj': Adjusted p-value, based on bonferroni using all genes in the dataset
 
+# find all markers distinguishing cluster 5 from clusters 0 and 3
+cluster5.markers <- FindMarkers(pbmc, ident.1 = 5, ident.2 = c(0, 3))
+head(cluster5.markers, n = 5)
+#                       p_val avg_log2FC pct.1 pct.2     p_val_adj
+# FCGR3A        8.246578e-205   6.794969 0.975 0.040 1.130936e-200
+# IFITM3        1.677613e-195   6.192558 0.975 0.049 2.300678e-191
+# CFD           2.401156e-193   6.015172 0.938 0.038 3.292945e-189
+# CD68          2.900384e-191   5.530330 0.926 0.035 3.977587e-187
+# RP11-290F20.3 2.513244e-186   6.297999 0.840 0.017 3.446663e-182
 
+# find markers for every cluster compared to all remaining cells,
+# report only the positive ones
+pbmc.markers <- FindAllMarkers(pbmc, only.pos = TRUE)
+pbmc.markers %>%
+  group_by(cluster) %>%
+  dplyr::filter(avg_log2FC > 1)
+#        p_val avg_log2FC pct.1 pct.2 p_val_adj cluster gene
+#  1 3.75e-112       1.21 0.912 0.592 5.14e-108 0       LDHB
+#  2 9.57e- 88       2.40 0.447 0.108 1.31e- 83 0       CCR7
+#  3 1.15e- 76       1.06 0.845 0.406 1.58e- 72 0       CD3D
+#  4 1.12e- 54       1.04 0.731 0.4   1.54e- 50 0       CD3E
+#  5 1.35e- 51       2.14 0.342 0.103 1.86e- 47 0       LEF1
+#  6 1.94e- 47       1.20 0.629 0.359 2.66e- 43 0       NOSIP
+#  7 2.81e- 44       1.53 0.443 0.185 3.85e- 40 0       PIK3IP1
+#  8 6.27e- 43       1.99 0.33  0.112 8.60e- 39 0       PRKCQ-AS1
+#  9 1.16e- 40       2.70 0.2   0.04  1.59e- 36 0       FHIT
+# 10 1.34e- 34       1.96 0.268 0.087 1.84e- 30 0       MAL
 
+# There are many different DE test options (e.g., ROC, DESeq2, wilcox_limma, LR, etc.).
+# Default is 'wilcox'.
+# The ROC test returns the ‘classification power’ for any individual
+#      marker (ranging from 0 - random, to 1 - perfect).
+cluster0.markers <- FindMarkers(
+  pbmc,
+  ident.1 = 0,
+  logfc.threshold = 0.25,
+  test.use = "roc",
+  only.pos = TRUE
+)
 
+# Visualize marker expression =============
+# Recommended functions: VlnPlot(), FeaturePlot(), RidgePlot(), CellScatter(), DotPlot()
+VlnPlot(pbmc, features = c("MS4A1", "CD79A"))
+VlnPlot(pbmc, features = c("NKG7", "PF4"), slot = "counts", log = TRUE) # raw counts
+FeaturePlot(pbmc,
+  features = c("MS4A1", "GNLY", "CD3E", "CD14", "FCER1A", "FCGR3A", "LYZ", "PPBP", "CD8A")
+)
+# Heatmap of  top 20 markers (or all markers if less than 20) for each cluster
+top10 <- pbmc.markers %>%
+  group_by(cluster) %>%
+  dplyr::filter(avg_log2FC > 1) %>%
+  slice_head(n = 10) %>%
+  ungroup()
+markerHeatmap <- DoHeatmap(pbmc, features = top10$gene) + NoLegend()
+
+pdf(file.path(plotsDir, "markerHeatmap.pdf"), width = 10, height = 10)
+print(markerHeatmap)
+dev.off()
+
+# Assigning cell type identity to clusters -----------------------------------------
+# Use canonical markers...
+new.cluster.ids <- c(
+  "Naive CD4 T", "CD14+ Mono", "Memory CD4 T", "B", "CD8 T",
+  "FCGR3A+ Mono", "NK", "DC", "Platelet"
+)
+names(new.cluster.ids) <- levels(pbmc)
+pbmc <- RenameIdents(pbmc, new.cluster.ids)
+
+umapCanonical <- DimPlot(
+  pbmc,
+  reduction = "umap",
+  label = TRUE,
+  label.size = 4.5
+) +
+  xlab("UMAP 1") +
+  ylab("UMAP 2") +
+  theme(
+    axis.title = element_text(size = 18),
+    legend.text = element_text(size = 18)
+  ) +
+  guides(colour = guide_legend(override.aes = list(size = 10)))
+ggsave(
+  plot = umapCanonical,
+  filename = file.path(plotsDir, "umapCanonical.pdf"),
+  height = 7, width = 12
+)
+
+# Save rds -----------------------------------------
+saveRDS(pbmc, file = file.path(rDataDir, "pbmc3k_final.rds"))
