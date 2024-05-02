@@ -14,5 +14,5 @@ seuratTutorials.Rproj
 .Rproj.user/
 
 # Large data files
-introduction/data/*
+introduction/0_data/*
 introduction/1_guidedClustering/rData/*
