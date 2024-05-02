@@ -6,15 +6,15 @@
 # Email: 16amz1@queensu.ca
 #-------------------------------------------------
 # Notes -------------------------------------------
-# module load StdEnv/2023 r/4.3.1
+# module load StdEnv/2023 r/4.4.0
 #
 # Options -----------------------------------------
 
 # Packages -----------------------------------------
 library(dplyr) # 1.1.4; data wrangling
-library(Seurat) # 5.0.1; scRNA data analysis
-library(patchwork) # 1.1.3; combine ggplots
-library(ggplot2) # 3.4.4
+library(Seurat) # 5.0.3; scRNA data analysis
+library(patchwork) # 1.2.0; combine ggplots
+library(ggplot2) # 3.5.1
 
 # Pathways -----------------------------------------
 baseDir <- file.path("introduction", "1_guidedClustering")
