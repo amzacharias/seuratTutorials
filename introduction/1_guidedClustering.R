@@ -22,7 +22,7 @@ baseDir <- file.path("introduction", "1_guidedClustering")
 dataLink <- "https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz"
 
 # Output ===========
-scDataDir <- file.path(dirname(baseDir), "data")
+scDataDir <- file.path(dirname(baseDir), "0_data")
 plotsDir <- file.path(baseDir, "plots")
 rDataDir <- file.path(baseDir, "rData")
 system(paste("mkdir", scDataDir, plotsDir, rDataDir))
