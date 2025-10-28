@@ -16,3 +16,5 @@ seuratTutorials.Rproj
 # Large data files
 introduction/0_data/*
 introduction/1_guidedClustering/rData/*
+spatial_seqbased/data/*
+spatial_seqbased/results/rdata/*
