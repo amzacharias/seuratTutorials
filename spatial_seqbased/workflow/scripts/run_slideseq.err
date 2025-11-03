@@ -1,0 +1,32 @@
+
+The following have been reloaded with a version change:
+  1) r/4.4.0 => r/4.5.0
+
+Loading required package: SeuratObject
+Loading required package: sp
+
+Attaching package: ‘SeuratObject’
+
+The following objects are masked from ‘package:base’:
+
+    intersect, t
+
+── Installed datasets ──────────────────────────────── SeuratData v0.2.2.9002 ──
+✔ ssHippo  3.1.4                        ✔ stxBrain 0.1.2
+
+────────────────────────────────────── Key ─────────────────────────────────────
+✔ Dataset loaded successfully
+❯ Dataset built with a newer version of Seurat than installed
+❓ Unknown version of Seurat installed
+
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
